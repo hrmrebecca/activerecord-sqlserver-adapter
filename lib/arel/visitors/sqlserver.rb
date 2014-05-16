@@ -447,12 +447,12 @@ module Arel
       end
 
       def primary_key(table)
-        primary_key_name = table.engine.connection.primary_key(name)
-        primary_key_name && self[primary_key_name] # some tables might be without primary key
+        primary_key_name = table.engine.connection.primary_key(table.name)
+        primary_key_name && table[primary_key_name] # some tables might be without primary key
       end
 
       def columns(table)
-        table.engine.connection.columns(table.name, "#{table.name} Columns") 
+        table.send(:attributes_for, table.engine.connection.columns(table.name, "#{table.name} Columns"))
       end
     end
   end
