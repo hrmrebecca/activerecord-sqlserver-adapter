@@ -365,7 +365,7 @@ module Arel
         return false if core.projections.size != 1
         p = core.projections.first
         t = table_from_select_statement(o)
-        Arel::Attributes::Attribute === p && t.primary_key && t.primary_key.name == p.name
+        Arel::Attributes::Attribute === p && primary_key(t) && primary_key(t).name == p.name
       end
 
       def find_and_fix_uncorrelated_joins_in_select_statement(o)
@@ -430,7 +430,7 @@ module Arel
           o.orders
         else
           t = table_from_select_statement(o)
-          c = t.primary_key || t.columns.first
+          c = primary_key(t) || columns(t).first
           [c.asc]
         end.uniq
       end
@@ -444,6 +444,15 @@ module Arel
           x.sub!(/TOP\s*\(\d+\)\s*/i, '')
           x.strip
         end.join(', '))
+      end
+
+      def primary_key(table)
+        primary_key_name = table.engine.connection.primary_key(name)
+        primary_key_name && self[primary_key_name] # some tables might be without primary key
+      end
+
+      def columns(table)
+        table.engine.connection.columns(table.name, "#{table.name} Columns") 
       end
     end
   end
